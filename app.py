@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
+import bcrypt
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -21,13 +22,68 @@ class Product(db.Model):
     price = db.Column(db.Float)
     stock = db.Column(db.Integer)
 
+# ---------------- HOME ROUTE ----------------
 @app.route('/')
 def home():
-    return "Database connected successfully!"
+    return "E-Commerce API Running Successfully!"
 
-# Create database tables
+# ---------------- REGISTER API ----------------
+@app.route('/register', methods=['POST'])
+def register():
+
+    data = request.get_json()
+
+    name = data['name']
+    email = data['email']
+    password = data['password']
+
+    # Convert password to encrypted form
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    # Create user object
+    new_user = User(
+        name=name,
+        email=email,
+        password=hashed_password
+    )
+
+    # Save to database
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({
+        "message": "User registered successfully"
+    })
+
+# ---------------- LOGIN API ----------------
+@app.route('/login', methods=['POST'])
+def login():
+
+    data = request.get_json()
+
+    email = data['email']
+    password = data['password']
+
+    # Find user in database
+    user = User.query.filter_by(email=email).first()
+
+    if user:
+
+        # Check password
+        if bcrypt.checkpw(password.encode('utf-8'), user.password):
+
+            return jsonify({
+                "message": "Login successful"
+            })
+
+    return jsonify({
+        "message": "Invalid email or password"
+    })
+
+# ---------------- CREATE DATABASE ----------------
 with app.app_context():
     db.create_all()
 
+# ---------------- RUN APP ----------------
 if __name__ == '__main__':
     app.run(debug=True)
