@@ -239,6 +239,27 @@ def get_orders():
 
     return jsonify(output)
 
+# ---------------- RECOMMEND PRODUCTS API ----------------
+@app.route('/recommend/<int:max_price>', methods=['GET'])
+def recommend_products(max_price):
+
+    products = Product.query.filter(Product.price <= max_price).all()
+
+    output = []
+
+    for product in products:
+
+        product_data = {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "stock": product.stock
+        }
+
+        output.append(product_data)
+
+    return jsonify(output)
+
 
 # ---------------- CREATE DATABASE ----------------
 with app.app_context():
