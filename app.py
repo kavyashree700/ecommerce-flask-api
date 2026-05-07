@@ -22,6 +22,13 @@ class Product(db.Model):
     price = db.Column(db.Float)
     stock = db.Column(db.Integer)
 
+# ---------------- ORDER TABLE ----------------
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_email = db.Column(db.String(100))
+    product_name = db.Column(db.String(100))
+    quantity = db.Column(db.Integer)
+
 # ---------------- CART TABLE ----------------
 class Cart(db.Model):
 
@@ -156,6 +163,69 @@ def remove_from_cart(id):
     return jsonify({
         "message": "Item removed from cart"
     })
+
+# ---------------- PLACE ORDER API ----------------
+@app.route('/place_order', methods=['POST'])
+def place_order():
+
+    data = request.get_json()
+
+    email = data['email']
+    product_name = data['product_name']
+    quantity = data['quantity']
+
+    # Find product
+    product = Product.query.filter_by(name=product_name).first()
+
+    if not product:
+        return jsonify({
+            "message": "Product not found"
+        })
+
+    # Check stock
+    if product.stock < quantity:
+        return jsonify({
+            "message": "Insufficient stock"
+        })
+
+    # Reduce stock
+    product.stock -= quantity
+
+    # Create order
+    new_order = Order(
+        user_email=email,
+        product_name=product_name,
+        quantity=quantity
+    )
+
+    db.session.add(new_order)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Order placed successfully"
+    })
+
+
+# ---------------- VIEW ORDERS API ----------------
+@app.route('/orders', methods=['GET'])
+def get_orders():
+
+    orders = Order.query.all()
+
+    output = []
+
+    for order in orders:
+
+        order_data = {
+            "id": order.id,
+            "user_email": order.user_email,
+            "product_name": order.product_name,
+            "quantity": order.quantity
+        }
+
+        output.append(order_data)
+
+    return jsonify(output)
 
 
 # ---------------- CREATE DATABASE ----------------
