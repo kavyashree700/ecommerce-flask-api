@@ -84,6 +84,51 @@ def login():
 with app.app_context():
     db.create_all()
 
+# ---------------- ADD PRODUCT API ----------------
+@app.route('/add_product', methods=['POST'])
+def add_product():
+
+    data = request.get_json()
+
+    name = data['name']
+    price = data['price']
+    stock = data['stock']
+
+    new_product = Product(
+        name=name,
+        price=price,
+        stock=stock
+    )
+
+    db.session.add(new_product)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Product added successfully"
+    })
+
+
+# ---------------- VIEW PRODUCTS API ----------------
+@app.route('/products', methods=['GET'])
+def get_products():
+
+    products = Product.query.all()
+
+    output = []
+
+    for product in products:
+
+        product_data = {
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+            "stock": product.stock
+        }
+
+        output.append(product_data)
+
+    return jsonify(output)
+
 # ---------------- RUN APP ----------------
 if __name__ == '__main__':
     app.run(debug=True)
