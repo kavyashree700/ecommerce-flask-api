@@ -1,12 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import(
+    JWTManager,
+    create_access_token,
+    jwt_required
+)
 from config import Config
 import bcrypt
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
+app.config['JWT_SECRET_KEY'] = 'mysecretkey'
+
 db = SQLAlchemy(app)
+
+jwt = JWTManager(app)
 
 # ---------------- USER TABLE ----------------
 class User(db.Model):
@@ -90,8 +99,11 @@ def login():
         # Check password
         if bcrypt.checkpw(password.encode('utf-8'), user.password):
 
+            access_token = create_access_token(identity=email)
+
             return jsonify({
-                "message": "Login successful"
+                 "message": "Login successful",
+                 "token": access_token
             })
 
     return jsonify({
@@ -258,6 +270,7 @@ def add_product():
 
 # ---------------- VIEW PRODUCTS API ----------------
 @app.route('/products', methods=['GET'])
+@jwt_required()
 def get_products():
 
     products = Product.query.all()
