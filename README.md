@@ -1,38 +1,48 @@
 # E-Commerce REST API
 
-A backend-based E-Commerce system developed using Flask and SQLite.
+Backend-based E-Commerce application developed using Flask and SQLite.
 
 ## Features
-- User Authentication
+- User Registration
+- User Login Authentication
+- JWT Security
 - Product Management
 - Cart System
-- Order Management
-- Recommendation System
+- Order Placement
+- Inventory Management
+- Product Recommendation System
 
-## Tech Stack
+## Technologies Used
 - Python
 - Flask
 - Flask-SQLAlchemy
 - SQLite
 - JWT Authentication
+- Bcrypt
 - Postman
 - Git & GitHub
 
-## Project Structure
+## APIs Implemented
 
-ecommerce-api/
-│── app.py
-│── config.py
-│── README.md
-│── .gitignore
-│── instance/
-│── venv/
+### Authentication APIs
+- POST /register
+- POST /login
 
-## Status
-Day 1 Completed:
-- Flask setup
-- GitHub integration
+### Product APIs
+- POST /add_product
+- GET /products
 
-Day 2 Completed:
-- Database connection
-- User and Product models created
+### Cart APIs
+- Add to cart
+- View cart
+- Remove from cart
+
+### Order APIs
+- POST /place_order
+- GET /orders
+
+### Recommendation API
+- GET /recommend/<max_price>
+
+## Project Outcome
+Successfully developed a secure backend e-commerce system with authentication, inventory management, ordering system, and recommendation functionality.
