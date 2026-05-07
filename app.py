@@ -22,6 +22,17 @@ class Product(db.Model):
     price = db.Column(db.Float)
     stock = db.Column(db.Integer)
 
+# ---------------- CART TABLE ----------------
+class Cart(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer)
+
+    product_id = db.Column(db.Integer)
+
+    quantity = db.Column(db.Integer)
+
 # ---------------- HOME ROUTE ----------------
 @app.route('/')
 def home():
@@ -79,6 +90,73 @@ def login():
     return jsonify({
         "message": "Invalid email or password"
     })
+
+# ---------------- ADD TO CART API ----------------
+@app.route('/add_to_cart', methods=['POST'])
+def add_to_cart():
+
+    data = request.get_json()
+
+    user_id = data['user_id']
+    product_id = data['product_id']
+    quantity = data['quantity']
+
+    cart_item = Cart(
+        user_id=user_id,
+        product_id=product_id,
+        quantity=quantity
+    )
+
+    db.session.add(cart_item)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Product added to cart"
+    })
+
+# ---------------- VIEW CART API ----------------
+@app.route('/cart', methods=['GET'])
+def view_cart():
+
+    cart_items = Cart.query.all()
+
+    output = []
+
+    for item in cart_items:
+
+        product = Product.query.get(item.product_id)
+
+        cart_data = {
+            "cart_id": item.id,
+            "user_id": item.user_id,
+            "product_name": product.name,
+            "quantity": item.quantity,
+            "price": product.price
+        }
+
+        output.append(cart_data)
+
+    return jsonify(output)
+
+# ---------------- REMOVE FROM CART API ----------------
+@app.route('/remove_from_cart/<int:id>', methods=['DELETE'])
+def remove_from_cart(id):
+
+    cart_item = Cart.query.get(id)
+
+    if not cart_item:
+
+        return jsonify({
+            "message": "Cart item not found"
+        })
+
+    db.session.delete(cart_item)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Item removed from cart"
+    })
+
 
 # ---------------- CREATE DATABASE ----------------
 with app.app_context():
